@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { View, Text, Button, TextInput, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, Button, TextInput, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
 
 const Stack = createStackNavigator();
 
 const HomeScreen = ({ navigation }) => {
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Bem-vindo ao Desafio 21 Dias!</Text>
-      <Button title="Criar Desafio" onPress={() => navigation.navigate('CriarDesafio')} />
-      <Button title="Ver Desafios" onPress={() => navigation.navigate('Desafio')} />
+    <View style={styles.container}>
+      <Text style={styles.title}>Bem-vindo ao Desafio 21 Dias!</Text>
+      
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('CriarDesafio')}>
+        <Text style={styles.buttonText}>Criar Desafio</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Desafio')}>
+        <Text style={styles.buttonText}>Ver Desafios</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -34,21 +40,26 @@ const CriarDesafioScreen = ({ navigation, route }) => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Crie seu desafio</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Crie seu desafio</Text>
+      
       <TextInput
         placeholder="Título do desafio"
         value={titulo}
         onChangeText={setTitulo}
-        style={{ borderWidth: 1, width: '80%', margin: 10, padding: 5 }}
+        style={styles.input}
       />
+      
       <TextInput
         placeholder="Descrição"
         value={descricao}
         onChangeText={setDescricao}
-        style={{ borderWidth: 1, width: '80%', margin: 10, padding: 5 }}
+        style={styles.input}
       />
-      <Button title="Adicionar Desafio" onPress={adicionarDesafio} />
+      
+      <TouchableOpacity style={styles.button} onPress={adicionarDesafio}>
+        <Text style={styles.buttonText}>Adicionar Desafio</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -67,23 +78,31 @@ const DesafioScreen = ({ route }) => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Seus desafios:</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Seus desafios:</Text>
+      
       <FlatList
         data={desafios}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={{ padding: 10, borderBottomWidth: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '90%' }}>
-            <View>
-              <Text style={{ fontWeight: 'bold' }}>{item.titulo}</Text>
-              <Text>{item.descricao}</Text>
-              <Text>⏳ Dias desde o início: {calcularDias(item.dataInicio)}</Text>
+        renderItem={({ item }) => {
+          const dias = calcularDias(item.dataInicio);
+          return (
+            <View style={styles.desafioCard}>
+              <View>
+                <Text style={styles.desafioTitulo}>{item.titulo}</Text>
+                <Text style={styles.desafioDescricao}>{item.descricao}</Text>
+                <Text style={styles.desafioDias}>⏳ Dias: {dias}</Text>
+              </View>
+              {dias >= 21 ? (
+                <Image source={require('./medalha.png')} style={styles.medalha} />
+              ) : (
+                <TouchableOpacity onPress={() => excluirDesafio(item.id)} style={styles.deleteButton}>
+                  <Text style={styles.buttonText}>X</Text>
+                </TouchableOpacity>
+              )}
             </View>
-            <TouchableOpacity onPress={() => excluirDesafio(item.id)} style={{ backgroundColor: 'red', padding: 5, borderRadius: 5 }}>
-              <Text style={{ color: 'white' }}>Excluir</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          );
+        }}
       />
     </View>
   );
@@ -110,3 +129,76 @@ export default function App() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    padding: 20,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#333',
+  },
+  button: {
+    backgroundColor: '#4169E1',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    marginVertical: 10,
+    width: '80%',
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#CCC',
+    width: '80%',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 10,
+    backgroundColor: '#FFF',
+  },
+  desafioCard: {
+    backgroundColor: '#FFF',
+    padding: 15,
+    borderRadius: 10,
+    marginVertical: 8,
+    width: '90%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    elevation: 3,
+  },
+  desafioTitulo: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  desafioDescricao: {
+    color: '#555',
+  },
+  desafioDias: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: '#888',
+  },
+  deleteButton: {
+    backgroundColor: '#FF3B3B',
+    padding: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  medalha: {
+    width: 40,
+    height: 40,
+  },
+});
